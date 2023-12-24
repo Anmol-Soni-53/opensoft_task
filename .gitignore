@@ -1,0 +1,27 @@
+# Django
+env/
+staticfiles/
+media/
+*.pyc
+*.pyo
+*.pyd
+/db.sqlite3
+/migrations/
+local_settings.py
+/logs/
+/cache/
+
+# React
+node_modules/
+/build/
+/dist/
+*.min.js
+*.min.css
+.env
+.env.local
+
+# Common
+*.log
+.DS_Store
+.vscode/
+.idea/
