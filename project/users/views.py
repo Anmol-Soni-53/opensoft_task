@@ -4,6 +4,8 @@ from rest_framework.response import Response
 from .models import User
 from rest_framework.exceptions import AuthenticationFailed
 import jwt,datetime
+from django.shortcuts import redirect
+from django.urls import reverse
 
 class RegisterView(APIView):
     def post(self,request):
@@ -39,8 +41,10 @@ class LoginView(APIView):
             'message':'success',
             'jwt':token
         }
+        user_url = reverse('user-detail', kwargs={'pk': user.id})  
+        return redirect(user_url)
         
-        return response
+        # return response
 
 class UserView(APIView):
     def get(self,request):
@@ -49,12 +53,12 @@ class UserView(APIView):
         # return Response(token)
 
         if not token:
-            raise AuthenticationFailed("Unauthenticated!")
+            raise AuthenticationFailed("Unauthenticated! token not present")
         
         try:
             payload=jwt.decode(token,'secret',algorithms=['HS256'])
         except:
-            raise AuthenticationFailed("Unauthenticated!")
+            raise AuthenticationFailed("Unauthenticated! token not matching")
 
         user=User.objects.filter(id=payload['id']).first()
         serializer=UserSerializer(user)
@@ -70,6 +74,26 @@ class LogoutView(APIView):
         }
         
         return response
+    
+class UserDetailView(APIView):
+    def get(self,request,pk):
+        token=request.COOKIES.get('jwt')
+
+        # return Response(token)
+
+        if not token:
+            raise AuthenticationFailed("Unauthenticated! token not present")
+        
+        try:
+            payload=jwt.decode(token,'secret',algorithms=['HS256'])
+        except:
+            raise AuthenticationFailed("Unauthenticated! token not matching")
+        if int(pk) != payload['id']:
+            raise AuthenticationFailed("Unauthorized to view this user's details!")
+        else:
+            user=User.objects.filter(id=payload['id']).first()
+            serializer=UserSerializer(user)
+            return Response(serializer.data)
 
 
 
